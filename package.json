@@ -1,0 +1,30 @@
+{
+  "name": "spcplayerbot",
+  "version": "1.0.0",
+  "description": "SPC Player Bot",
+  "type": "commonjs",
+  "private": true,
+  "dependencies": {
+    "@descript/web-audio-js": "^0.15.3-patched.2",
+    "@discordjs/opus": "^0.5.3",
+    "@discordjs/voice": "^0.5.5",
+    "@smwcentral/spc-player": "file:lib/smwcentral-spc-player",
+    "better-sqlite3": "^7.4.3",
+    "discord.js": "^13.0.0",
+    "jszip": "^3.6.0",
+    "lamejs": "^1.2.0",
+    "libflacjs": "^5.4.0",
+    "libsodium-wrappers": "^0.7.9"
+  },
+  "scripts": {
+    "start": "screen -dmS \"spcplayerbot\" ./node.sh",
+    "dev": "env NODE_ENV=development node server.js",
+    "stop": "./stop.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "admin@randev.xyz:~/git/spcplayer.git/"
+  },
+  "author": "RanAS",
+  "license": "UNLICENSED"
+}
