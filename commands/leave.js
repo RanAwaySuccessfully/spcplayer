@@ -11,12 +11,18 @@ module.exports = {
             return;
         }
 
-        if (!override && !util.checkUserVoiceChannel(message, session)) {
-            return;
+        
+        if (!override && !check) {
+            var check = await util.checkUserVoiceChannel(message, session);
+            if (!check) {
+                return;
+            }
         }
 
-        session.player.stop();
-        session.connection.destroy();
+        if (commands && (commands[1] !== 3)) {
+            session.player.stop();
+            session.connection.destroy();
+        }
 
         clearTimeout(session._timeout);
         clearTimeout(session._inactive);
@@ -34,6 +40,9 @@ module.exports = {
         var options = commands ? (typeof commands[1] === "number") ? commands[1] : commands.slice(1).join(" "): null;
 
         switch (options) {
+            case 3:
+                sent.edit("Cleaning complete. Session data should be synced now (hopefully).");
+                break;
             case 2:
                 sent.edit("Left the channel due to being moved. The track queue was saved for later.");
                 break;

@@ -4,6 +4,3 @@ lib/emsdk
 logs
 misc
 TODO
-login_key*
-
-**/db/db.*

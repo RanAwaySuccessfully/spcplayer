@@ -6,24 +6,24 @@
   "private": true,
   "dependencies": {
     "@descript/web-audio-js": "^0.15.3-patched.2",
-    "@discordjs/opus": "^0.5.3",
-    "@discordjs/voice": "^0.5.5",
+    "@discordjs/voice": "^0.11.0",
     "@smwcentral/spc-player": "file:lib/smwcentral-spc-player",
-    "better-sqlite3": "^7.4.3",
-    "discord.js": "^13.0.0",
+    "better-sqlite3": "^7.5.1",
+    "discord.js": "^13.11.0",
     "jszip": "^3.6.0",
     "lamejs": "^1.2.0",
     "libflacjs": "^5.4.0",
-    "libsodium-wrappers": "^0.7.9"
+    "libsodium-wrappers": "^0.7.9",
+    "opusscript": "^0.0.8"
   },
   "scripts": {
     "start": "screen -dmS \"spcplayerbot\" ./node.sh",
-    "dev": "env NODE_ENV=development node server.js",
+    "dev": "env NODE_ENV=development node --inspect server.js",
     "stop": "./stop.sh"
   },
   "repository": {
     "type": "git",
-    "url": "admin@randev.xyz:~/git/spcplayer.git/"
+    "url": "clyde@66.228.58.77:~/spcplayer.git/"
   },
   "author": "RanAS",
   "license": "UNLICENSED"

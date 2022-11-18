@@ -159,7 +159,7 @@ module.exports = {
                 if (!entry) {
                     return;
                 }
-                util.runCommand("play", [message, [null, entry.url]]);
+                util.runCommand("play", [message, [null, entry.url]]).catch(util.handleError.bind(message));
                 break;
             }
             case "search": {
@@ -263,13 +263,13 @@ module.exports = {
 		var success;
 
         switch (reaction.emoji.id || reaction.emoji.name) {
-            case "⬅️":
+            case "⬅":
 				data.page--;
 				util.wipeReactions(reaction.message);
 				success = this.editEmbed(reaction.message, data.page, data.list, data.isSearch);
 				if (!success) {data.page++;}
 				break;
-			case "➡️":
+			case "➡":
 				data.page++;
 				util.wipeReactions(reaction.message);
 				success = this.editEmbed(reaction.message, data.page, data.list, data.isSearch);

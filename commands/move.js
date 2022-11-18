@@ -8,7 +8,7 @@ module.exports = {
             return;
         }
 
-        if (!util.checkUserVoiceChannel(message, session)) {
+        if (!await util.checkUserVoiceChannel(message, session)) {
             return;
         }
 

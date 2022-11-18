@@ -1,10 +1,20 @@
 # SPC Player
 
-This is a copy of (most of) the code of the SPC Player discord bot used in SnesLab. This repository is kept up to date manually.
+This is a copy of (most of) the code of the SPC Player discord bot used in SnesLab. This is a frozen copy of the code, it is not kept up to date.
+
+Some parts of the code may contain bugs, may be broken, or be out of date.
+
+## Dependencies
+
+This bot runs on Node.js. Install it, and run `npm install` to install all library dependencies.
+
+SMWCentral's SPC Player must be installed manually by going to [this repository](https://github.com/RanAwaySuccessfully/smwcentral-spc-player) and cloning it while inside the `lib` folder. Note that the aforementioned link points to a fork of the original repository. Instructions for how to build the SMWCentral's SPC Player are located on its README.
 
 ## Login Key
 
-Create a file named ``login_key`` and store your bot's login token there. Careful not to publicly disclose it. For local testing you can also create a file named `login_key_dev`, with either the same or a different token. This token can be found on the [Discord Developer Portal](https://discord.com/developers/applications/) by clicking your application's name and then: Bot > Build-A-Bot > Token.
+Create a file named ``token.json`` and store your bot's login token there. For production use the property `token`, for local testing use `tokenDev`. Careful not to publicly disclose it. This token can be found on the [Discord Developer Portal](https://discord.com/developers/applications/) by clicking your application's name and then: Bot > Build-A-Bot > Token.
+
+Optionally fill in your Discord ID as the property `uidBotOwner`.
 
 ## Database
 

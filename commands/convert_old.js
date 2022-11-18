@@ -1,16 +1,16 @@
 "use strict";
 const util = require("../lib/util");
 const child_process = require("child_process");
-const { rejects } = require("assert");
 const fs = require("fs").promises;
+const { Worker } = require("worker_threads");
 
 module.exports = {
-    command: async function(message, commands, showTime, deleteMessage) {
+    command: async function(message, commands, showTime) {
         if (!util.cache._convert) {
-            util.cache._convert = false;
+            util.cache._convert = [];
         }
 
-        if (util.cache._convert) {
+        if (util.cache._convert.includes(message.guild.id)) {
             message.channel.send("I'm already processing a request. Please wait a bit and try again.");
             return;
         }
@@ -79,7 +79,7 @@ module.exports = {
             "wav": "00:00:40.000",
             "mp3": "00:05:00.000",
             "flac": "00:01:15.000",
-            //"funny": "00:02:00.000"
+            "funny": "00:02:00.000"
         };
 
         if (spcDuration && (spcDuration < 300)) {
@@ -88,11 +88,11 @@ module.exports = {
 
         const length = fileTypes[option];
         if (!length) {
-            message.channel.send("Unsupported format. Supported formats are: `wav`, `flac` (default) and `mp3`.");
+            message.channel.send("Unsupported format. Supported formats are: `wav` (default), `flac` and `mp3`.");
             return;
         }
 
-        util.cache._convert = true;
+        util.cache._convert.push(message.guild.id);
 
         const time = Date.now();
         const temp = message.channel.send("Converting SPC to " + option.toUpperCase() + "...");
@@ -102,101 +102,73 @@ module.exports = {
             prefix = "./spc/";
         }
 
-        //const memoryLimit = 100;
-        const child = child_process.spawn("nice", ["-n", "19", "node", prefix + "lib/spc2audio.js", option, length]);
-        const stdout = promisify(child.stdout);
-        const stderr = promisify(child.stderr);
-        let noSpc = false;
+        const workerData = {
+            "file": spcBuffer,
+            "option": option,
+            "time": length
+        };
+
+        const result = await new Promise((resolve, reject) => {
+            const worker = new Worker(prefix + "lib/spc2audio3.js", { workerData });
+            worker.on("message", resolve);
+            worker.on("error", reject);
+            worker.on("exit", (code) => {
+            if (code !== 0)
+                reject(new Error(`Worker stopped with exit code ${code}`));
+            })
+        }).catch(util.handleError.bind(message));
+
+        if (!result) {
+            return;
+        }
 
         if (option === "funny") {
             option = "flac";
         }
 
         spcName = spcName.replace(/\.spc$/, "." + option);
-
-        stdout.then(buffer => {
-            util.cache._convert = false;
-
-            const total = Date.now() - time;
-            const string = util.formatTime(total, true, true);
-
-            if (!buffer.length) {
-                stderr.then(buffer => {
         
-                    if (buffer.length) {
-                        temp.then(temp => temp.delete());
-                        const errorString = buffer.toString();
-                        util.handleError.call(message, "Error while processing SPC file:\n" + errorString);
-                        return;
-                    } else {
-                        temp.then(temp => temp.edit("I didn't run into an error, but I also don't have a converted file to show you. This is extremely odd."));
-                    }
-                });
-
-                return;
-            }
-
-            if (deleteMessage) {
-                temp.then(temp => temp.delete());
-            } else {
-                temp.then(temp => temp.edit("File conversion complete!"));
-            }
-
-            if (buffer.length > 8388608) {
-                message.channel.send("I generated an audio file larger than 8MB, and I can't upload it.");
-
-                if (process.env.NODE_ENV === "development") {
-                    fs.writeFile("./" + spcName, buffer);
-                    message.channel.send("File stored in `/" + spcName + "`.");
-                }
-                return;
-            }
-
-            const msgObj = {
-                files: [
-                    {
-                        attachment: buffer,
-                        name: spcName
-                    }
-                ]
-            };
-
-            if (showTime) {
-                msgObj.content = "Time spent converting the SPC: " + string;
-            }
-
-            message.channel.send(msgObj);
-        });
-
-        child.on("error", function (error) {
-            util.cache._convert = false;
-            util.handleError.call(message, error);
-        });
-
-        const done = child.stdin ? child.stdin.write(Buffer.from(spcBuffer)) : true;
-        if (!done) {
-            child.stdin.on("drain", () => {
-                child.stdin.end();
-            });
-        } else {
-            child.stdin.end();
+        const index = util.cache._convert.indexOf(message.guild.id);
+        if (index !== -1) {
+            util.cache._convert.splice(index, 1);
         }
-    }
-}
 
-const promisify = pipe => {
-    return new Promise((resolve, reject) => {
-        if (!pipe) {
-            reject();
+        const buffer = Buffer.from(result.audioBuffer);
+        const total = Date.now() - time;
+        const string = util.formatTime(total, true, true);
+
+        if (!buffer.length) {
+            temp.then(temp => temp.edit("Error while processing SPC file."));
             return;
         }
-    
-        const data = [];
-        pipe.on("data", buffer => data.push(buffer));
 
-        pipe.on("end", () => {
-            const buffer = Buffer.concat(data);
-            resolve(buffer);
+        temp.then(temp => temp.edit("File conversion complete!"));
+
+        if (buffer.length > 8388608) {
+            message.channel.send("I generated an audio file larger than 8MB, and I can't upload it.");
+
+            if (process.env.NODE_ENV === "development") {
+                fs.writeFile("./" + spcName, buffer);
+                message.channel.send("File stored in `/" + spcName + "`.");
+            }
+            return;
+        }
+
+        const msgObj = {
+            files: [
+                {
+                    attachment: buffer,
+                    name: spcName
+                }
+            ]
+        };
+
+        if (showTime) {
+            msgObj.content = "Time spent converting the SPC: " + string;
+        }
+
+        message.channel.send(msgObj).then(() => {
+            delete result.audioBuffer;
         });
-    });
-};
+    }
+}

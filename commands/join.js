@@ -5,12 +5,12 @@ const util = require("../lib/util");
 module.exports = {
     command: async function(message, commands, noFirstTimeHelp) {
         var session = util.cache[message.guild.id];
-        var channel = util.checkUserVoiceChannel(message, session);
+        var channel = await util.checkUserVoiceChannel(message, session);
         if (!channel) {
             return;
         }
 
-        if (session && session.connection && (channel.id === message.guild.voice.channel.id)) {
+        if (session && session.connection && (channel.id === message.guild.me.voice.channel.id)) {
             message.channel.send("I'm already here.");
             return;
         }
@@ -64,7 +64,7 @@ module.exports = {
 
         util.db.getServerConfig(message.guild.id).then(config => {
             if (!noFirstTimeHelp && config.firstMessage) {
-                util.runCommand("help", [message, []]);
+                util.runCommand("help", [message, []]).catch(util.handleError.bind(message));
             }
         });
     

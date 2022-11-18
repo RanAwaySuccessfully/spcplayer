@@ -7,7 +7,7 @@ const { createAudioResource, StreamType, AudioPlayerStatus } = require("@discord
 module.exports = {
     command: async function(message, commands) {
         var session = util.cache[message.guild.id];
-        if (!util.checkUserVoiceChannel(message, session)) {
+        if (!await util.checkUserVoiceChannel(message, session)) {
             return;
         }
 
@@ -25,7 +25,7 @@ module.exports = {
             name = match ? match[1] : "(unknown)";
         } else {
             if (session && session.connection && (session.player.state.status === AudioPlayerStatus.Paused) && session.current) {
-                util.runCommand("resume", [message, commands]);
+                util.runCommand("resume", [message, commands]).catch(util.handleError.bind(message));
             } else {
                 message.channel.send("No SPC file attached.");
             }
@@ -44,7 +44,7 @@ module.exports = {
                 return;
             }
         } else {
-            session = await util.runCommand("join", [message, commands, true]);
+            session = await util.runCommand("join", [message, commands, true]).catch(util.handleError.bind(message));
             if (!session) {
                 return;
             }
@@ -111,7 +111,7 @@ async function addSPC(message, file, session, name, url) {
         session.queue.push(spcFileObj);
 
         if (session.noQueueMode) {
-            util.runCommand("next", [message, null, true]);
+            util.runCommand("next", [message, null, true]).catch(util.handleError.bind(message));
             return;
         }
 

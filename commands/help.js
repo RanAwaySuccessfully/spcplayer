@@ -37,13 +37,13 @@ module.exports = {
 		var success;
 
         switch (reaction.emoji.id || reaction.emoji.name) {
-            case "⬅️":
+            case "⬅":
 				data.page--;
 				util.wipeReactions(reaction.message);
 				success = this.editEmbed(reaction.message, data.page);
 				if (!success) {data.page++;}
 				break;
-			case "➡️":
+			case "➡":
 				data.page++;
 				util.wipeReactions(reaction.message);
 				success = this.editEmbed(reaction.message, data.page);
@@ -74,7 +74,7 @@ function getEmbed(page, client) {
         },
         {
             name: "about",
-            value: "Bot info and credits."
+            value: "Information about the bot, and where to go for support regarding bug reports, ideas, etc."
         },
         {
             name: "clear",

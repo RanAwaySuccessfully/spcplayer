@@ -8,7 +8,7 @@ module.exports = {
             return;
         }
 
-        if (!util.checkUserVoiceChannel(message, session)) {
+        if (!await util.checkUserVoiceChannel(message, session)) {
             return;
         }
 
@@ -34,6 +34,6 @@ module.exports = {
         session.queue.splice(0, index);
         message.channel.send("Jumped to track #" + (index + 1) + "!");
 
-        util.runCommand("next", [message, commands]);
+        util.runCommand("next", [message, commands]).catch(util.handleError.bind(message));
     }
 }

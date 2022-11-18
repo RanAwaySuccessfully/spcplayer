@@ -43,17 +43,16 @@ module.exports = {
     },
 
     collector: async function(data, reaction, user) {
-        var myPermissions = reaction.message.channel.permissionsFor(reaction.message.guild.me);
 		var success;
 
         switch (reaction.emoji.id || reaction.emoji.name) {
-            case "⬅️":
+            case "⬅":
 				data.page--;
 				util.wipeReactions(reaction.message);
 				success = this.editEmbed(reaction.message, data.page);
 				if (!success) {data.page++;}
 				break;
-			case "➡️":
+			case "➡":
 				data.page++;
 				util.wipeReactions(reaction.message);
 				success = this.editEmbed(reaction.message, data.page);

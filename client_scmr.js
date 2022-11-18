@@ -43,9 +43,13 @@ module.exports = {
     },
 
     login: function() {
-        return fs.readFile(util.getFilePath("./login_key_scmr"), "utf-8").then(key => {
-            key = key.toString().replace(/\s/g, "");
-            client.login(key);
+		return fs.readFile(util.getFilePath("./token.json"), "utf-8").then(file => {
+			const json = JSON.parse(file);
+			const key = json.tokenSCMR;
+
+			if (key) {
+				client.login(key);
+			}
         });
     }
 };

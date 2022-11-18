@@ -41,12 +41,25 @@ module.exports = {
 			if (process.env.NODE_ENV !== "development") {
 				scmr = require("./client_scmr");
 				scmr.init(this).then(resolve, reject);
-			}
+			}/* else {
+				setInterval(() => {
+					const bytesToMB = (value) => Math.round(value / 1024 / 1024);
+					const memoryUsage = process.memoryUsage();
+					const string = `**Memory:** ${ bytesToMB(memoryUsage.rss) }MB [heap: ${ bytesToMB(memoryUsage.heapUsed) }MB / ${ bytesToMB(memoryUsage.heapTotal) }MB]` + 
+                    ` [ext: ${ bytesToMB(memoryUsage.external) }MB]`;
+					console.log(string);
+				}, 500);
+			}*/
 		});
     },
 
 	initSB: function() {
 		util.db.init(util);
+
+		fs.readFile(util.getFilePath("./token.json"), "utf-8").then(file => {
+			const json = JSON.parse(file);
+			util.const = {...util.const, ...json.const};
+        });
 	},
 
 	restart: () => {},
@@ -59,14 +72,12 @@ module.exports = {
     },
 
     login: function() {
-		let filename = "./login_key";
-		if (process.env.NODE_ENV === "development") {
-			filename = "./login_key_dev";
-		}
-
-        return fs.readFile(util.getFilePath(filename), "utf-8").then(key => {
-            key = key.toString().replace(/\s/g, "");
+		return fs.readFile(util.getFilePath("./token.json"), "utf-8").then(file => {
+			const json = JSON.parse(file);
+			const key = (process.env.NODE_ENV === "development") ? json.tokenDev : json.token;
             client.login(key);
+
+			util.const = {...util.const, ...json.const};
         });
     },
 
@@ -87,10 +98,10 @@ module.exports = {
 
 			if (oldState.member?.id ===	channel.client.user.id) {
 				if (!newState.channelId) {
-					util.runCommand("leave", [null, [null, 1], session._channel]);
+					util.runCommand("leave", [null, [null, 1], session._channel]).catch(util.handleError);
 					return;
 				} else if (oldState.channelId && (newState.channelId !== oldState.channelId)) {
-					util.runCommand("leave", [null, [null, 2], session._channel]);
+					util.runCommand("leave", [null, [null, 2], session._channel]).catch(util.handleError);
 					return;
 				}
 			}
@@ -126,12 +137,9 @@ module.exports = {
 			}
 
 			if (message.content && (message.content.toLowerCase() === "invite")) {
-				let url = await client.generateInvite({
-					scopes: ["applications.commands", "bot"]
-				});
-				const supportServer = "https://discord.gg/"; // REDACTED
+				const supportServer = "";
 				message.reply({
-					content: `Bot Invite Link: ${url}\nSupport Server: ${supportServer}`,
+					content: `Invite Link: ${supportServer}`,
 					allowedMentions: {
 						repliedUser: false
 					}
@@ -163,7 +171,7 @@ module.exports = {
 			}
 		}
 
-		if (message.author.id === "256504506433404930") {
+		if (message.author.id === util.const.uidBotOwner) {
 			switch (commands[0]) {
 				case "bridges¬":
 					bridgeInfo(message);
@@ -230,6 +238,10 @@ function mainCommands(message, commands, config) {
 			filename: "convert",
 			parameters: [true]
 		},
+        "convert+delete": {
+			filename: "convert",
+			parameters: [false, true]
+		},
 		"convert": { filename: "convert" },
 		"current": { filename: "current" },
 		"dl": downloadCommand,
@@ -237,6 +249,8 @@ function mainCommands(message, commands, config) {
 		"first-message": { filename: "firstmessage" },
 		"c": joinCommand,
 		"connect": joinCommand,
+		"inactive": { filename: "inactive" },
+		"invite": { filename: "invite" },
 		"j": joinCommand,
 		"join": joinCommand,
 		"jump": { filename: "jump" },
@@ -264,12 +278,12 @@ function mainCommands(message, commands, config) {
 		"resume": { filename: "resume" },
 		"q": queueCommand,
 		"queue": queueCommand,
-		"queue-mode": { filename: "queue-mode" },
+		"queue-mode": { filename: "queuemode" },
 		"remove": { filename: "remove" },
 		"role": { filename: "role" },
 		"star": { filename: "star" },
 		"shuffle": { filename: "shuffle" },
-		"system": { filename: "system" },
+		//"system": { filename: "system" },
 		"h": helpCommand,
 		"help": helpCommand
 	};
@@ -284,7 +298,7 @@ function mainCommands(message, commands, config) {
 
 	const commandFound = commandList[commands[0]];
 
-	if (commandFound.filename) {
+	if (commandFound?.filename) {
 		if (commandFound.parameters) {
 			parameters = parameters.concat(commandFound.parameters);
 		}
