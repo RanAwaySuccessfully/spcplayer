@@ -70,8 +70,26 @@ Before starting the bot, beware that some of the it's features use programs such
 
 The bot can be started using `npm start` and stopped using `npm stop`. These commands will make the bot run in the background. For testing locally, use either `npm run dev` or the included VSCode run configuration.
 
+Be sure to create the folders `logs` and `temp` before attempting to use the bot. They may be necessary for some features but the bot itself will make no attempt to create them.
+
 ## License
 
-This code is currently not distributed under a license (this may change later). Ask for permission before using it (I'll probably allow it).
+```
+    SPC Player (Discord Bot)
+    Copyright (C) 2023  RanAwaySuccessfully
 
-The files `lib/bridge.js`, `lib/spc2audio.js`, `lib/flac-encoder.js`, `lib/mp3-encoder.js` and `lib/flac-encoder-funny.js` are licensed under the [ISC License](https://opensource.org/licenses/ISC).
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+    USA
+```
