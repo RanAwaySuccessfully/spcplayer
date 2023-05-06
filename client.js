@@ -148,7 +148,14 @@ module.exports = {
 			return;
 		}
 
-		var myPermissions = message.channel.permissionsFor(message.guild.me);
+		const me = message.guild.members.me || message.guild.me;
+		var myPermissions = message.channel.permissionsFor(me);
+		if (!myPermissions) {
+			debugger;
+			util.handleError(message, new Error("No permissions? Why?"));
+			return;
+		}
+
 		if (!myPermissions.has("SEND_MESSAGES")) {return;}
 		if (!myPermissions.has("EMBED_LINKS")) {
 			message.channel.send("I don't have the **Embed Links** permission, which is necessary for most commands to work.");

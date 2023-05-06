@@ -1,7 +1,6 @@
 "use strict";
 const util = require("../lib/util");
 const child_process = require("child_process");
-const { rejects } = require("assert");
 const fs = require("fs").promises;
 
 module.exports = {
@@ -75,22 +74,52 @@ module.exports = {
         }
 
         let option = commands[2] ? commands[2].toLowerCase() : "flac";
-        const fileTypes = {
-            "wav": "00:00:40.000",
-            "mp3": "00:05:00.000",
-            "flac": "00:01:15.000",
-            //"funny": "00:02:00.000"
-        };
+        let fileTypes;
+        let maxSize;
 
-        if (spcDuration && (spcDuration < 300)) {
-            fileTypes["mp3"] = "00:" + util.formatTime(spcDuration * 1000, true) + ".000";
+        switch (message.guild.premiumTier) {
+            case "NONE":
+            case "TIER_1":
+                maxSize = 8388608;
+                fileTypes = {
+                    "wav": 40,
+                    "mp3": 330,
+                    "flac": 70,
+                    "funny": 70
+                };
+                break;
+            case "TIER_2":
+                maxSize = 52428800;
+                fileTypes = {
+                    "wav": 250,
+                    "mp3": 900,
+                    "flac": 400,
+                    "funny": 400
+                };
+                break;
+            case "TIER_3":
+                maxSize = 104857600;
+                fileTypes = {
+                    "wav": 500,
+                    "mp3": 900,
+                    "flac": 850,
+                    "funny": 850
+                };
+                break;
         }
 
-        const length = fileTypes[option];
+        let length = fileTypes[option];
         if (!length) {
             message.channel.send("Unsupported format. Supported formats are: `wav`, `flac` (default) and `mp3`.");
             return;
         }
+
+        if (spcDuration && (spcDuration < length)) {
+            length = spcDuration;
+        }
+
+        const lengthDate = new Date(length * 1000);
+        const lengthString = lengthDate.toISOString().match(/T(.+)Z$/)[1];
 
         util.cache._convert = true;
 
@@ -103,10 +132,9 @@ module.exports = {
         }
 
         //const memoryLimit = 100;
-        const child = child_process.spawn("nice", ["-n", "19", "node", prefix + "lib/spc2audio.js", option, length]);
+        const child = child_process.spawn("nice", ["-n", "19", "node", prefix + "lib/spc2audio2.js", option, lengthString]);
         const stdout = promisify(child.stdout);
         const stderr = promisify(child.stderr);
-        let noSpc = false;
 
         if (option === "funny") {
             option = "flac";
@@ -142,13 +170,18 @@ module.exports = {
                 temp.then(temp => temp.edit("File conversion complete!"));
             }
 
-            if (buffer.length > 8388608) {
+            if (buffer.length > maxSize) {
+                if (showTime) {
+                    message.channel.send("Time spent converting the SPC: " + string);
+                }
+
                 message.channel.send("I generated an audio file larger than 8MB, and I can't upload it.");
 
                 if (process.env.NODE_ENV === "development") {
                     fs.writeFile("./" + spcName, buffer);
                     message.channel.send("File stored in `/" + spcName + "`.");
                 }
+                
                 return;
             }
 

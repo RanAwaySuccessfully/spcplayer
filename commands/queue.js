@@ -74,10 +74,6 @@ function getEmbed(page, client, session) {
         return `${index+1}: \`${q.name}\` (${formattedTime})`;
     });
 
-    if (!queue.length) {
-        queue.push("(nothing)");
-    }
-
     var totalPages = Math.ceil(queue.length / 10);
 
     var end = (page * 10);
@@ -85,6 +81,10 @@ function getEmbed(page, client, session) {
 
     if ((start < 0) || (start >= queue.length)) {
         return null;
+    }
+
+    if (!queue.length) {
+        queue.push("(nothing)");
     }
 
     var usedTracks = queue.slice(start, end);

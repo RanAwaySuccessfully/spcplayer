@@ -8,9 +8,11 @@ module.exports = {
             return;
         }
 
-        var check = await util.checkUserVoiceChannel(message, session);
-        if (!override && !check) {
-            return;
+        if (!override) {
+            var check = await util.checkUserVoiceChannel(message, session);
+            if (!check) {
+                return;
+            }
         }
 
         if (session._next) {
