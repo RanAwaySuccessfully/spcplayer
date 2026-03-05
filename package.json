@@ -20,10 +20,6 @@
     "dev": "env NODE_ENV=development node --inspect server.js",
     "stop": "./stop.sh"
   },
-  "repository": {
-    "type": "git",
-    "url": "clyde@66.228.58.77:~/spcplayer.git/"
-  },
   "author": "RanAS",
   "license": "UNLICENSED"
 }
